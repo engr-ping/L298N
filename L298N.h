@@ -14,14 +14,20 @@
 #ifdef __cplusplus
 extern "C"{
 #endif /*__cplusplus*/
-#include "stdint.h"
+#include <Arduino.h>
 #define MOTOR_FORWARD 2U
 #define MOTOR_REVERSE 1U
 #define MOTOR_STOP    0U
 
+#ifdef L298N_NUM
+#define L298N_MOTOR_CHANNEL_MAX L298N_NUM*2U
+#else
 #define L298N_MOTOR_CHANNEL_MAX 2U
+#endif
 
-typedef unsigned char Std_Return;
+#ifndef uint8_t
+typedef unsigned char uint8_t;
+#endif
 
 typedef void (*pinWirteFunc_t)(uint8_t,uint8_t);
 typedef void (*pwmWirteFunc_t)(uint8_t,float);
@@ -33,8 +39,14 @@ typedef struct L298N_PinType{
     pwmWirteFunc_t pwmWriteFunc;
 }L298N_PinType_t;
 extern L298N_PinType_t L298N_ChannelCfg[L298N_MOTOR_CHANNEL_MAX];
-Std_Return L298N_MotorControl(int channel,unsigned char rotation );
-Std_Return L298N_MotorSpeed(int channel,float speed);
+typedef uint8_t (*MotorControl_t)(void*,uint8_t);
+typedef uint8_t (*MotorSpeed_t)(void*,float);
+typedef struct{
+    L298N_PinType_t* PinCfg;
+    MotorControl_t Control;
+    MotorSpeed_t Speed;
+}L298N_t;
+
 
 #ifdef __cplusplus
 }
