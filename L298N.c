@@ -11,16 +11,15 @@
 #ifdef __cplusplus
 extern "C"{
 #endif
-#include "stddef.h"
 #include "L298N.h"
 
-uint8_t L298N_MotorControl(L298N_t* instance,unsigned char rotation )
+uint8_t L298N_MotorControl(struct L298N_tag* self,uint8_t rotation )
 {
-    if(instance == NULL)
+    if(self == NULL)
     {
         return 1;
     }
-    L298N_PinType_t* pinControl = instance->PinCfg;
+    L298N_PinType_t* pinControl = self->PinCfg;
     if(pinControl->pinWirteFunc == NULL)
     {
         return 1;
@@ -44,10 +43,10 @@ uint8_t L298N_MotorControl(L298N_t* instance,unsigned char rotation )
 }
 
 
-uint8_t L298N_MotorSpeed(L298N_t* instance,float speed)
+uint8_t L298N_MotorSpeed(struct L298N_tag* self,int speed)
 {
 
-    L298N_PinType_t* pinControl = instance->PinCfg;
+    L298N_PinType_t* pinControl = self->PinCfg;
     if(pinControl->pwmWriteFunc == NULL)
     {
         return 1;
@@ -57,14 +56,19 @@ uint8_t L298N_MotorSpeed(L298N_t* instance,float speed)
 }
 static L298N_t L298N_Instances[L298N_MOTOR_CHANNEL_MAX];
 static L298N_PinType_t L298N_pinCfg[L298N_MOTOR_CHANNEL_MAX];
-
+static int channel = 0;
 L298N_t* L298N_Create(L298N_PinType_t* pinCfg)
 {
     if(pinCfg == NULL)
     {
         return NULL;
     }
-    static channel = 0;
+
+    if(channel >= L298N_MOTOR_CHANNEL_MAX)
+    {
+        return NULL;
+    }
+    
     L298N_t* instance = &L298N_Instances[channel];
     instance->PinCfg = &L298N_pinCfg[channel];
     
@@ -93,6 +97,7 @@ L298N_t* L298N_Create(L298N_PinType_t* pinCfg)
     instance->Speed = L298N_MotorSpeed;
 
     channel++;
+    
     return instance;
 }
 
